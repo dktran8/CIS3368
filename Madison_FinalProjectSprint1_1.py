@@ -46,14 +46,16 @@ def addguest():
     conn = create_connection("cis3368fall2021.c2ksqbnomh6f.us-east-2.rds.amazonaws.com", "admin", "MadisonFall2021", "cis3368fall2021")
     query = "INSERT INTO guest (firstname, lastname) VALUES ('%s', '%s')" % (newfirstname, newlastname)
     execute_query(conn,query)
-    #make a while loop to ask user to input from 5 to 10 restaurants
+    
     count = 0
+    # count how many restaurants the user adds
     while (count <= 9):
+    #make a while loop to ask user to input from 5 to 10 restaurants
         print("Type a list of restaurants with 5 being minimum and 10 beng maximum (Type 'Q' to quit): ")
         newrestaurant = input(" ")
         if newrestaurant == 'Q' and count < 4:
             #keep asking for input if the numbers of restaurant is not enough
-            #stop when enough restaurants
+            #stop when enough restaurants or user has entered "Q"
             print("You have to type at least 5 restaurants: ")
         elif newrestaurant == 'Q' and count > 4:
             break
@@ -71,11 +73,9 @@ def addguest():
 @app.route('/api/deleteguest', methods=['GET'])
 def deleteguest():
     request_data = request.get_json()
-    deletename = request_data['firstname']
-    # id = request_data['id']
     #connects to mySQL database and allows to modify data from Postman to mySQL
     conn = create_connection("cis3368fall2021.c2ksqbnomh6f.us-east-2.rds.amazonaws.com", "admin", "MadisonFall2021", "cis3368fall2021")
-    if 'firstname' in request.args: #only if an id is provided as an argument, proceed
+    if 'firstname' in request.args: #only if a firstname is provided as an argument, proceed
         firstname = str(request.args['firstname'])
     else:
         return 'ERROR: No ID provided!'
@@ -86,13 +86,16 @@ def deleteguest():
     for user in guest:
         if user['firstname'] == firstname:
             results.append(user['id'])
-            query = "DELETE from guest WHERE firstname = '%s' " % (firstname)
+            # if the name the user entered is in the guest table it will add the ID to the results list
+            query = "DELETE from guest WHERE firstname = '%s' " % (firstname)  # Deletes the guest and their information from guest table
             execute_query(conn,query)
             sql2 = "SELECT * FROM restaurant"
             rest = execute_read_query(conn, sql2)
-            for new in rest:
-                for x in results:
-                    if new['guestid'] == x:
+            for new in rest: # goes through the restaurant table 
+                for x in results: # goes through the results list (which should only have the ID of the guest that was just deleted)
+                    if new['guestid'] == x: 
+                        # if the guest id from the restaurant table and the ID of the guest that was just deleted match
+                        # It deletes all the restaurants that that guest had enetered
                         query2 = f"""DELETE from restaurant WHERE guestid = {x}"""
                         execute_query(conn,query2)
     return 'Guest was successfully deleted.' #Returns a statement if the code works successfully
@@ -149,16 +152,42 @@ def deleterestaurant():
     execute_query(conn,query)
     return 'Restaurant was successfully deleted.' #Returns a statement if the code works successfully
 
-#Generates a random restaurant
+#Update a restaurant in the table
+@app.route('/api/updaterestaurant', methods=['PUT'])
+def updaterestaurant():
+    request_data = request.get_json()
+    restaurantid = request_data['id']
+    updatename = request_data['restaurantname']
+   
+    #connects to mySQL database and allows to modify data from Postman to mySQL
+    conn = create_connection("cis3368.cdqrwblrgkaj.us-east-2.rds.amazonaws.com", "schoolproject", "cis3368fall", "cis3368fall21")
+    query = "UPDATE restaurant SET restaurantname= '%s' WHERE id = %s" %(updatename, restaurantid)
+    execute_query(conn,query)
+    return 'Restaurant was successfully updated'
+
 @app.route('/api/randomrestaurant', methods=["GET"])
 def randomrestaurant():
-    conn = create_connection("cis3368.cdqrwblrgkaj.us-east-2.rds.amazonaws.com", "schoolproject", "cis3368fall", "cis3368fall21")
-    sql = "SELECT restaurantname FROM restaurant ORDER BY RAND () LIMIT 5"
-    random_rest = execute_read_query(conn, sql)
+    conn = create_connection("cis3368fall2021.c2ksqbnomh6f.us-east-2.rds.amazonaws.com", "admin", "MadisonFall2021", "cis3368fall2021")
+    print("Please enter your first name:")
+    selectf = input(" ")
+    print("Please enter your lastname:")
+    selectl = input(" ")    
+    sql = "SELECT * FROM guest"
+    guest = execute_read_query(conn, sql)
     results = []
-    for object in random_rest:
-        results.append(object)
-    return jsonify(results)
-
+    for user in guest:
+        if selectf in user['firstname'] and selectl in user['lastname']:
+            results.append(user['id'])
+            sql2 = "SELECT * FROM restaurant"
+            rest = execute_read_query(conn, sql2)
+            for new in rest: # goes through the restaurant table 
+                for x in results: # goes through the results list (which should only have the ID of the guests that were entered)
+                    if new['guestid'] == x:
+                        sql3 = f"""SELECT restaurantname FROM restaurant WHERE guestid = {x} ORDER BY RAND () LIMIT 1""" 
+                        random_rest = execute_read_query(conn, sql3)
+                        results2 = []
+                    for object in random_rest:
+                        results2.append(object)
+                    return jsonify(results2)
 
 app.run()
