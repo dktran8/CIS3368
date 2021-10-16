@@ -160,7 +160,7 @@ def updaterestaurant():
     updatename = request_data['restaurantname']
    
     #connects to mySQL database and allows to modify data from Postman to mySQL
-    conn = create_connection("cis3368.cdqrwblrgkaj.us-east-2.rds.amazonaws.com", "schoolproject", "cis3368fall", "cis3368fall21")
+    conn = create_connection("cis3368fall2021.c2ksqbnomh6f.us-east-2.rds.amazonaws.com", "admin", "MadisonFall2021", "cis3368fall2021")
     query = "UPDATE restaurant SET restaurantname= '%s' WHERE id = %s" %(updatename, restaurantid)
     execute_query(conn,query)
     return 'Restaurant was successfully updated'
@@ -168,26 +168,38 @@ def updaterestaurant():
 @app.route('/api/randomrestaurant', methods=["GET"])
 def randomrestaurant():
     conn = create_connection("cis3368fall2021.c2ksqbnomh6f.us-east-2.rds.amazonaws.com", "admin", "MadisonFall2021", "cis3368fall2021")
-    print("Please enter your first name:")
-    selectf = input(" ")
-    print("Please enter your lastname:")
-    selectl = input(" ")    
+    print("How many people are going to dinner?")
+    dinner = int(input(""))
+    list = []
+    for x in range(dinner): # loops through asking for user first and last name for each person attending dinner
+        print("Please enter your first name:")
+        selectf = input(" ")
+        list.append(selectf)
+        print("Please enter your lastname:")
+        selectl = input(" ")   
+        list.append(selectl) 
+    # the name of the people attending dinner are all added into a list
     sql = "SELECT * FROM guest"
     guest = execute_read_query(conn, sql)
     results = []
     for user in guest:
-        if selectf in user['firstname'] and selectl in user['lastname']:
-            results.append(user['id'])
-            sql2 = "SELECT * FROM restaurant"
-            rest = execute_read_query(conn, sql2)
-            for new in rest: # goes through the restaurant table 
-                for x in results: # goes through the results list (which should only have the ID of the guests that were entered)
-                    if new['guestid'] == x:
-                        sql3 = f"""SELECT restaurantname FROM restaurant WHERE guestid = {x} ORDER BY RAND () LIMIT 1""" 
-                        random_rest = execute_read_query(conn, sql3)
-                        results2 = []
-                    for object in random_rest:
-                        results2.append(object)
-                    return jsonify(results2)
+        for x in list: # the for loop goes through the list of people attending dinner
+            # if those names are in the guest table it adds their ID number to a new list
+            if x in user['firstname'] or x in user['lastname']:
+                results.append(user['id'])
+                sql2 = "SELECT * FROM restaurant"
+                rest = execute_read_query(conn, sql2)
+                for new in rest: # goes through the restaurant table 
+                    for x in results: # goes through the results list (which should only have the ID of the guests that were entered)
+                        if new['guestid'] == x: 
+                            # if the ID's from the results list match the guest ID's from the restaurant list
+                            # it takes the restaurants of all the guests that were entered and put it into another empty list
+                            sql3 = f"""SELECT restaurantname FROM restaurant WHERE guestid = {x} ORDER BY RAND () LIMIT 1"""  
+                            # ^ selects a random restauramt from the restaurant list of the people going to dinner
+                            random_rest = execute_read_query(conn, sql3)
+                            results2 = []
+                        for object in random_rest:
+                            results2.append(object)
+                        return jsonify(results2)
 
 app.run()
