@@ -1,5 +1,6 @@
 
 # Dinh Tran
+# Madison Fletcher
 # CIS 3368
 # Professor Otto Dobretsberger
 # Final Project Sprint 1
@@ -40,13 +41,30 @@ def addguest():
     newfirstname = request_data['firstname']
     newlastname = request_data['lastname']
     newrestaurant = request_data['restaurantname']
-    
+ 
     #connects to mySQL database and allows to add data from Postman to mySQL
     conn = create_connection("cis3368fall2021.c2ksqbnomh6f.us-east-2.rds.amazonaws.com", "admin", "MadisonFall2021", "cis3368fall2021")
     query = "INSERT INTO guest (firstname, lastname) VALUES ('%s', '%s')" % (newfirstname, newlastname)
     execute_query(conn,query)
-    query2 = """INSERT INTO restaurant(restaurantname, guest_id) VALUES ('%s', (SELECT max(id) FROM guest))""" % (newrestaurant)
-    execute_query(conn, query2)
+    #make a while loop to ask user to input from 5 to 10 restaurants
+    count = 0
+    while (count <= 10):
+        print("Type a list of restaurants with 5 being minimum and 10 beng maximum (Type 'Q' to quit): ")
+        newrestaurant = input(" ")
+        count += 1
+        if newrestaurant == 'Q' :
+            #keep asking for input if the numbers of restaurant is not enough
+            if count < 5:
+                print("You have to type at least 5 restaurants: ")
+            #stop when enough restaurants
+            else:
+                break
+        else:
+            # after for asking for 5 - 10 restaurants, the query will insert the restaurant name and guest id into the restaurant table
+            # the code adds the largest id from the guest table, and since the query before this adds a guest to the guest table the guest 
+            # with the largest id will be the last guest added.
+            query2 = f"""INSERT INTO restaurant (restaurantname, guestid) VALUES ("{newrestaurant}", (SELECT max(id) from guest))"""""
+            execute_query(conn, query2)
     return 'POST REQUEST WORKED'
 
 
