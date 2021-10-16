@@ -143,15 +143,15 @@ def updaterestaurant():
 #Generates a random restaurant
 @app.route('/api/randomrestaurant', methods=["GET"])
 def randomrestaurant():
+    request_data = request.get_json()
+    guestid = request_data['guestid']
+
     conn = create_connection("cis3368.cdqrwblrgkaj.us-east-2.rds.amazonaws.com", "schoolproject", "cis3368fall", "cis3368fall21")
-    sql = "SELECT restaurantname FROM restaurant ORDER BY RAND () LIMIT 1"
+    sql = "SELECT restaurantname FROM restaurant WHERE guestid = %s ORDER BY RAND () LIMIT 1" %(guestid)
     random_rest = execute_read_query(conn, sql)
     results = []
     for object in random_rest:
         results.append(object)
     return jsonify(results)
-
-
-
 
 app.run()
