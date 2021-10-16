@@ -1,0 +1,3 @@
+# restapi.py file from professor
+# https://www.tutorialspoint.com/how-to-get-max-id-of-row-data-in-mysql for the (SELECT max(id) from guest)
+# https://realpython.com/python-f-strings/ for the f"""INSERT INTO restaurant (restaurantname, guestid) VALUES ("{newrestaurant}"...
