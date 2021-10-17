@@ -195,10 +195,11 @@ def randomrestaurant():
                             # it takes the restaurants of all the guests that were entered and put it into another empty list
                             sql3 = f"""SELECT restaurantname FROM restaurant WHERE guestid = {x} ORDER BY RAND () LIMIT 1"""  
                             # ^ selects a random restauramt from the restaurant list of the people going to dinner
+                            global random_rest
                             random_rest = execute_read_query(conn, sql3)
                             results2 = []
-                        for object in random_rest:
-                            results2.append(object)
-                        return jsonify(results2)
+                            for object in random_rest:
+                                results2.append(object)
+                            return jsonify(results2)
 
 app.run()
