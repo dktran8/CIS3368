@@ -15,3 +15,5 @@
 #When running the /api/deleterestaurant endpoint,enter "restaurantname" : "(value)" in Body in Postman and click send, the new restaurant will be added.
 
 #When running the /api/updaterestaurant endpoint,enter "id" : "(value)", "restaurantname" : "(value)" in Body in Postman and click send, the restaurant information will be updated.
+
+#When running the /api/randomrestaurant endpoint, click send in Postman and a loop will appear in VScode terminal so that you can choose the number of guests are going to dinner and their first and last names. After that it will generate a random resutaurant based on those selected customers.
